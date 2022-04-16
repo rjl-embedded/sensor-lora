@@ -1,0 +1,263 @@
+[
+    {
+        "id": "899ee1a733157d92",
+        "type": "subflow",
+        "name": "protobuf",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "fe8a313d26fd6854"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 720,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "ccce8a20168b6194",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "fe8a313d26fd6854",
+        "type": "function",
+        "z": "899ee1a733157d92",
+        "name": "base64 -> bytes",
+        "func": "base64 = msg.payload.uplink_message.frm_payload\nbytes = Buffer.from(base64, 'base64')\n\nmsg.payload = bytes\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 80,
+        "wires": [
+            [
+                "3892f1d8083d5321"
+            ]
+        ]
+    },
+    {
+        "id": "3892f1d8083d5321",
+        "type": "decode",
+        "z": "899ee1a733157d92",
+        "name": "",
+        "protofile": "ed0bdc8f993ab456",
+        "protoType": "Packet",
+        "x": 380,
+        "y": 80,
+        "wires": [
+            [
+                "ccce8a20168b6194"
+            ]
+        ]
+    },
+    {
+        "id": "ccce8a20168b6194",
+        "type": "function",
+        "z": "899ee1a733157d92",
+        "name": "sensor fields",
+        "func": "msg.topic = \"attributes\"\nmsg.payload = msg.payload.attributes\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ed0bdc8f993ab456",
+        "type": "protobuf-file",
+        "protopath": "/data/protobuf/packet.proto",
+        "watchFile": true
+    },
+    {
+        "id": "fa0311e28f07768a",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "metadata",
+        "func": "dev_eui = msg.payload.end_device_ids.dev_eui\nrssi = msg.payload.uplink_message.rx_metadata[0].rssi\nsnr = msg.payload.uplink_message.rx_metadata[0].snr\n\nvar payload = {\n    device_id: dev_eui,\n    snr: snr,\n    rssi: rssi\n}\n\nmsg.topic = \"metadata\"\nmsg.payload = payload\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 100,
+        "wires": [
+            [
+                "0710a156fd6ec249"
+            ]
+        ]
+    },
+    {
+        "id": "bf8b8bc80201c9b4",
+        "type": "subflow:899ee1a733157d92",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "data",
+        "x": 410,
+        "y": 160,
+        "wires": [
+            [
+                "0710a156fd6ec249"
+            ]
+        ]
+    },
+    {
+        "id": "0710a156fd6ec249",
+        "type": "join",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 570,
+        "y": 160,
+        "wires": [
+            [
+                "ce7d6cac08a80032"
+            ]
+        ]
+    },
+    {
+        "id": "ce7d6cac08a80032",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "state_topic",
+        "func": "msg.state_topic = `homeassistant/sensor/greenhouse/state`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 160,
+        "wires": [
+            [
+                "f750d899d8317144",
+                "25e20ee518db682a"
+            ]
+        ]
+    },
+    {
+        "id": "f750d899d8317144",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "configuration",
+        "func": "// Home Assistant MQTT configuration \n\nvar didRun = context.get(\"didRun\")\n\nif (!didRun) {\n    \n    device_id = msg.payload.metadata.device_id\n\n    msg.payload = msg.payload.attributes.map ( (field)  => {\n        \n        entity_name =field.entityName;                  // e.g. SCD30\n        attribute_name = Object.keys(field)[1];         // e.g. temperature\n        value = Number(Object.values(field)[1]);        // e.g. 21.2\n        \n        attribute_name_capitalised = attribute_name.charAt(0).toUpperCase() + attribute_name.slice(1);\n        \n        node_id = device_id;\n        object_id = attribute_name;\n        \n        topic = `homeassistant/sensor/greenhouse${attribute_name_capitalised}/config`\n        name = `Greenhouse ${attribute_name} (${entity_name})`\n        value_template = `{{ value_json.${attribute_name} }}`\n        \n        switch (attribute_name) {\n            \n            case \"temperature\":\n                device_class = \"temperature\"\n                unit_of_measurement = \"°C\"\n                break;\n            case \"dewpoint\":\n                device_class = \"temperature\"\n                unit_of_measurement = \"°C\"\n                break;\n            case \"humidity\":\n                device_class = \"humidity\"\n                unit_of_measurement = \"%\"\n                break;\n            case \"light\":\n                device_class = \"illuminance\"\n                unit_of_measurement = \"lx\"\n                break;\n            case \"voltage\":\n                device_class = \"voltage\"\n                unit_of_measurement = \"V\"\n                break;\n            case \"pressure\":\n                device_class = \"pressure\"\n                unit_of_measurement = \"mbar\"\n                break;\n        }\n        \n        return {\n            topic: topic,\n            name: name,\n            state_topic: msg.state_topic,\n            value_template: value_template,\n            device_class: device_class,\n            unit_of_measurement: unit_of_measurement,\n            force_update: true,\n        }\n    })\n    \n    node.status({fill:\"green\",shape:\"dot\",text:\"configured\"})\n    context.set(\"didRun\", true)\n    \n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "node.status({fill:\"red\",shape:\"ring\",text:\"configuring...\"})\ncontext.set(\"didRun\", false)\n",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 100,
+        "wires": [
+            [
+                "b1c98943629d7ab8"
+            ]
+        ]
+    },
+    {
+        "id": "b1c98943629d7ab8",
+        "type": "split",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 1030,
+        "y": 100,
+        "wires": [
+            [
+                "da6e17a4c2de0939"
+            ]
+        ]
+    },
+    {
+        "id": "da6e17a4c2de0939",
+        "type": "change",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "transfer topic",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "payload.topic",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "delete",
+                "p": "payload.topic",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1170,
+        "y": 100,
+        "wires": [
+            [
+                "1675a4a586ab19c1"
+            ]
+        ]
+    },
+    {
+        "id": "25e20ee518db682a",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "state",
+        "func": "msg.topic = msg.state_topic\n\nattributes = {}\n\n// attributes = msg.payload.attributes.map ( (field)  => {\n//     attribute_name = Object.keys(field)[1];         // e.g. temperature\n//     value = Number(Object.values(field)[1]);        // e.g. 21.2\n    \n//     switch (attribute_name) {\n        \n//         case \"temperature\":\n//             value = value.toFixed(1);\n//             break;\n//         case \"dewpoint\":\n//             value = value.toFixed(1);\n//             break;\n//         case \"humidity\":\n//             value = value.toFixed(0);\n//             break;\n//         case \"light\":\n//             value = value.toFixed(0);\n//             break;\n//         case \"voltage\":\n//             value = value.toFixed(1);\n//             break;\n//     }\n    \n    \n//     return {\n//         [attribute_name]:Number(value)\n//     }\n// })\n\nfor (let i = 0; i < msg.payload.attributes.length; i++) {\n    \n    attribute = msg.payload.attributes[i]\n    attribute_name = Object.keys(attribute)[1];         // e.g. temperature\n    value = Number(Object.values(attribute)[1]);        // e.g. 21.2\n    \n    switch (attribute_name) {\n        \n        case \"temperature\":\n            value = value.toFixed(1);\n            break;\n        case \"dewpoint\":\n            value = value.toFixed(1);\n            break;\n        case \"humidity\":\n            value = value.toFixed(0);\n            break;\n        case \"light\":\n            value = value.toFixed(0);\n            break;\n        case \"voltage\":\n            value = value.toFixed(1);\n            break;\n    }\n    \n    attributes[attribute_name] = Number(value)\n}\n\nmsg.payload = attributes\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 160,
+        "wires": [
+            [
+                "bf7451cf92e0e2ee",
+                "d0e5b29f5e450b3d"
+            ]
+        ]
+    }
+]

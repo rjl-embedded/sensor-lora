@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+message Meta {
+   string device_eui = 1;
+}
+
+enum SensorType {
+    UnknownSensorType = 0;
+    environment = 1;
+    energy = 2;
+}
+
+enum EntityName {
+    UnknownEntity = 0;
+    HDC1080 = 1;
+    SCD30 = 2;
+    VEML7700 = 3;
+    BMP388 = 4;
+    LORA = 5;
+    BATTERY = 6;
+    EMONPI = 7;
+    BOILERLIGHT = 8;
+    DHT22 = 9;
+    SHT15 = 10;
+    SHT31 = 11;
+    VIRTUAL = 20;
+}
+
+
+message Attribute {
+    EntityName entity_name = 1;
+    oneof type {
+        // Environment
+        float temperature = 3;
+        float humidity = 4;
+        float pressure = 5;
+        float co2 = 6;
+        float light = 7;
+        float dewpoint = 40;
+
+        // Energy
+        float power = 8;
+        bool boiler_state = 9;
+        int32 boiler_on_time = 10;
+        float voltage = 20;
+        
+        // LORA
+        float rssi = 30;
+        float frequency_error = 31;
+        float snr = 32;
+   }
+}
+
+message Packet {
+   int32 packet_id = 1;
+   Meta meta = 2;
+   SensorType sensor_type = 3;
+   repeated Attribute attributes = 4;
+} 
