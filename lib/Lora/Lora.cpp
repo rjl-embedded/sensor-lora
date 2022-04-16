@@ -1,12 +1,15 @@
 #include <Lora.h>
 
+#define _STRINGIZE( x ) #x
+#define STRINGIZE( x )  _STRINGIZE( x )
+
 TTN_esp32 ttn;
 
-Lora::Lora( std::string appEui, std::string devEui, std::string appKey )
+Lora::Lora()
 {
-  _appEui = appEui;
-  _devEui = devEui;
-  _appKey = appKey;
+  _appEui = STRINGIZE(APP_EUI);
+  _devEui = STRINGIZE(DEV_EUI);
+  _appKey = STRINGIZE(APP_KEY);
 
   Wire.begin( PIN_SDA, PIN_SCL );
   Wire.setClock( 400000L );
@@ -15,12 +18,15 @@ Lora::Lora( std::string appEui, std::string devEui, std::string appKey )
 void Lora::start()
 {
   log_d( "Starting LORA..." );
+#ifdef TTGO_LORA32_V21
+  ttn.begin( NSS, 0, RST, DIO0, DIO1, DIO2 );
+#else
   ttn.begin();
+#endif
+  log_d( "LORA begin - OK" );
   ttn.onMessage( message );
-  ttn.join( _devEui.c_str(), _appEui.c_str(), _appKey.c_str(), -1, 1000 );
+  ttn.join( _devEui, _appEui, _appKey, 10, 1000 );
   while ( !ttn.isJoined() ) { ; }
-
-  log_d( "LORA started" );
   ttn.showStatus();
 }
 

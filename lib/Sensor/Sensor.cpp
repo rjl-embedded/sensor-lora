@@ -16,11 +16,11 @@ void Sensor::registerLora( Lora* lora ) { _lora = lora; }
 
 void Sensor::start()
 {
-  _lora->start();
   for ( auto entity : _entities ) { entity->start(); }
-
   auto it = std::remove_if( _entities.begin(), _entities.end(), isNotStarted );
   _entities.erase( it, _entities.end() );
+
+  _lora->start();
 
   publishDataTimer.start();
 

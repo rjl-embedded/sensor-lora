@@ -13,7 +13,7 @@
  */
 class Lora {
  public:
-  Lora( std::string appEui, std::string devEui, std::string appKey );
+  Lora();
 
   /**
    * @brief Start the driver and join The Things Network
@@ -35,9 +35,9 @@ class Lora {
   bool isJoined();
 
  private:
-  std::string _appEui;
-  std::string _devEui;
-  std::string _appKey;
+  char *_appEui;
+  char *_devEui;
+  char *_appKey;
 };
 
 /**
