@@ -75,8 +75,8 @@
         "type": "subflow:899ee1a733157d92",
         "z": "0bb2e6f7bb82ebc7",
         "name": "data",
-        "x": 430,
-        "y": 220,
+        "x": 470,
+        "y": 420,
         "wires": [
             [
                 "ce7d6cac08a80032",
@@ -95,8 +95,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 600,
-        "y": 220,
+        "x": 640,
+        "y": 420,
         "wires": [
             [
                 "a6f0cd079092f668"
@@ -114,8 +114,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 910,
-        "y": 280,
+        "x": 1290,
+        "y": 480,
         "wires": [
             [
                 "bf7451cf92e0e2ee"
@@ -133,8 +133,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 590,
-        "y": 140,
+        "x": 630,
+        "y": 480,
         "wires": [
             []
         ]
@@ -143,19 +143,18 @@
         "id": "a6f0cd079092f668",
         "type": "function",
         "z": "0bb2e6f7bb82ebc7",
-        "name": "attributes",
+        "name": "entity attributes",
         "func": "msg.topic = \"attributes\"\nmsg.payload = msg.payload.attributes\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 760,
-        "y": 220,
+        "x": 820,
+        "y": 420,
         "wires": [
             [
-                "25e20ee518db682a",
-                "4475c468f4e45482"
+                "68f1bd3f9bd22bd2"
             ]
         ]
     },
@@ -170,10 +169,12 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 590,
-        "y": 80,
+        "x": 490,
+        "y": 360,
         "wires": [
-            []
+            [
+                "0c27bdc7d9d763f1"
+            ]
         ]
     },
     {
@@ -187,8 +188,8 @@
         "arraySpltType": "len",
         "stream": false,
         "addname": "",
-        "x": 1070,
-        "y": 220,
+        "x": 1450,
+        "y": 420,
         "wires": [
             [
                 "b324b2d51922a6ee"
@@ -220,8 +221,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1210,
-        "y": 220,
+        "x": 1590,
+        "y": 420,
         "wires": [
             [
                 "1675a4a586ab19c1"
@@ -239,11 +240,78 @@
         "initialize": "node.status({fill:\"red\",shape:\"ring\",text:\"configuring...\"})\ncontext.set(\"didRun\", false)\n",
         "finalize": "",
         "libs": [],
-        "x": 930,
-        "y": 220,
+        "x": 1310,
+        "y": 420,
         "wires": [
             [
                 "8c13c4dda63cc163"
+            ]
+        ]
+    },
+    {
+        "id": "0c27bdc7d9d763f1",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "LoRa attributes",
+        "func": "entityName = \"LORA\"\n\nsnr = { \"entityName\": entityName, \"snr\": msg.payload.snr }\nrssi = { \"entityName\": entityName, \"rssi\": msg.payload.rssi }\n\nmsg.topic = \"lora\"\nmsg.payload = [snr, rssi]\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 360,
+        "wires": [
+            [
+                "68f1bd3f9bd22bd2"
+            ]
+        ]
+    },
+    {
+        "id": "68f1bd3f9bd22bd2",
+        "type": "join",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": true,
+        "timeout": "",
+        "count": "1",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 990,
+        "y": 420,
+        "wires": [
+            [
+                "107fd49dc3282525"
+            ]
+        ]
+    },
+    {
+        "id": "107fd49dc3282525",
+        "type": "function",
+        "z": "0bb2e6f7bb82ebc7",
+        "name": "concat",
+        "func": "lora = msg.payload.lora\nattributes = msg.payload.attributes\n\nmsg.payload = attributes.concat(lora)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 420,
+        "wires": [
+            [
+                "4475c468f4e45482",
+                "25e20ee518db682a"
             ]
         ]
     }
