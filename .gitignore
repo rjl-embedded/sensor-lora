@@ -9,3 +9,6 @@ docs/site
 secrets.h
 lib/proto/packet.pb.c
 lib/proto/packet.pb.h
+
+*.pyc
+secret*
