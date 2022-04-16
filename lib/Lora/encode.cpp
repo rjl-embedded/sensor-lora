@@ -1,14 +1,18 @@
 #include "encode.h"
 
+#define _STRINGIZE( x ) #x
+#define STRINGIZE( x )  _STRINGIZE( x )
+
 void encodePROTO( std::string devEUI, std::vector<Attribute> readings,
                   uint8_t *buffer, uint8_t buffer_length,
                   uint16_t &bytes_written )
 {
   Packet packet = Packet_init_default;
-  packet.sensor_type = SensorType_environment;
+  packet.sensor_type = SENSOR_TYPE;
 
   Meta sensorMeta = Meta_init_default;
   strcpy( sensorMeta.device_eui, devEUI.c_str() );
+  strcpy( sensorMeta.device_name, STRINGIZE( DEVICE_NAME ) );
   packet.has_meta = true;
   packet.meta = sensorMeta;
 

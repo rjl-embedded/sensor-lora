@@ -2,6 +2,7 @@ syntax = "proto3";
 
 message Meta {
    string device_eui = 1;
+   string device_name = 2;
 }
 
 enum SensorType {
