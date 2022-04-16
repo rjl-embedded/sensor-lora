@@ -5,7 +5,6 @@
 #include "pb_encode.h"
 #include <Arduino.h>
 #include <Entity.h>
-#include <esp_adc_cal.h>
 
 #include <packet.pb.h>
 
