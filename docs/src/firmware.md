@@ -91,9 +91,9 @@ build_flags =
 
 The code employs a simple plugin architecture to allow new devices to be added relatively easily. It defines a `Sensor` object representing the `Lora` driver object, and one or more `Entity` objects providing `attributes` (using the [language of Home Assistant](https://www.home-assistant.io/docs/configuration/customizing-devices)). At setup, the lora and entities are registered and started. The runloop drives a timer for the publishing interval.
 
-If this isn't clear: an 'entity' is something like an SHT31 temperature and humidity sensor. 'Temperature' and 'humidity' are attributes of that sensor.
+If this isn't clear: an 'Entity' is something like an SHT31 temperature and humidity sensor. 'Temperature' and 'humidity' are attributes of that sensor. A 'Sensor' here is the combination of sensors and lora radio comprising the device.
 
-### protobuf
+### Protocol buffer
 
 The device employes Google's [Protocol Buffers](https://developers.google.com/protocol-buffers/) for serialising and transmitting data. This has the advantage of generating very efficient packets, which reduces power requirements and extends battery life. It has the disadvantage of being a pain to implement on microcontrollers. I've made it as simple as possible to extend. 
 
