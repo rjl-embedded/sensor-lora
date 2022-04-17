@@ -65,7 +65,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#code-structure">Code structure</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#protobuf">protobuf</a>
+    <li class="toctree-l3"><a class="reference internal" href="#protocol-buffer">Protocol buffer</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#entity-class">Entity class</a>
         <ul>
@@ -171,8 +171,8 @@ build_flags =
 <p><a href="https://www.dropbox.com/s/gly6z21qqps7uvc/espMeshtasticBoards_ev01.xls?dl=0">This spreadsheet</a> may help you identify the pins for your microcontroller.</p>
 <h2 id="code-structure">Code structure</h2>
 <p>The code employs a simple plugin architecture to allow new devices to be added relatively easily. It defines a <code>Sensor</code> object representing the <code>Lora</code> driver object, and one or more <code>Entity</code> objects providing <code>attributes</code> (using the <a href="https://www.home-assistant.io/docs/configuration/customizing-devices">language of Home Assistant</a>). At setup, the lora and entities are registered and started. The runloop drives a timer for the publishing interval.</p>
-<p>If this isn't clear: an 'entity' is something like an SHT31 temperature and humidity sensor. 'Temperature' and 'humidity' are attributes of that sensor.</p>
-<h3 id="protobuf">protobuf</h3>
+<p>If this isn't clear: an 'Entity' is something like an SHT31 temperature and humidity sensor. 'Temperature' and 'humidity' are attributes of that sensor. A 'Sensor' here is the combination of sensors and lora radio comprising the device.</p>
+<h3 id="protocol-buffer">Protocol buffer</h3>
 <p>The device employes Google's <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a> for serialising and transmitting data. This has the advantage of generating very efficient packets, which reduces power requirements and extends battery life. It has the disadvantage of being a pain to implement on microcontrollers. I've made it as simple as possible to extend. </p>
 <p>The schema is defined in <code>/protobuf-packet/packet.proto</code>. String sizes for any metadata must be defined in <code>/protobuf-packet/packet.options</code>. Together, these define a <code>Packet</code> data structure that can be processed be e.g. <a href="nodered.html">node-RED</a>. If you alter this, you need to regenerate the header and implementation code in <code>proto</code> (don't alter these by hand) - see <code>/protobuf-packet/README.md</code> for instructions.</p>
 <p>The result of this is a set of constants you can use in your entity implementations to define entity and attribute properties -- look at an existing Entity implementationfor how to do it.</p>
