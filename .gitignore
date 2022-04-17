@@ -12,3 +12,4 @@ lib/proto/packet.pb.h
 
 *.pyc
 secret*
+.DS_Store

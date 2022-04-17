@@ -1,41 +1,18 @@
-# Welcome to MkDocs
+# sensor-lora
 
-This is firmware for a Home Assistant compatible sensor that provides environment data over a LoRa link.
+Home Assistant LoRa-connected sensor firmware for an ESP32.
 
-## Configuration
+**Version 0.1.0**
 
-### Secrets 
+![dashboard](/img/dashboard.jpg)
 
-Authentication data is obtained from `include/secrets.h` See Things Network [Add an Application](https://www.thethingsnetwork.org/docs/applications/add/) for how to generate an application and obtain keys. 
+OK. It's pretty niche. But if you happen to have, say, a greenhouse that is beyond packet-radio transmission distance for a battery powered temperature sensor, here's arduino firmware for an ESP32 providing [Home Assistant sensor](https://www.home-assistant.io/integrations/sensor/) data over a LoRa link. 
 
-```
-#define APP_EUI "XXX"
-#define DEV_EUI "XXX"
-#define APP_KEY "XXX"
-```
+Yes. You can now check your greenhouse temperature from 5 km away. Handy!
 
-### Publish interval
+Drivers for a [VEM7700 light sensor](https://www.vishay.com/docs/84286/veml7700.pdf), [Sensirion SHT31 temperature and humidity sensor](https://www.amazon.co.uk/Temperature-Interface-Measurement-GY-SHT31-D-Production/dp/B08NB86TRC/ref=sr_1_3_sspa?adgrpid=1181975898127193&hvadid=73873694047276&hvbmt=bp&hvdev=c&hvlocphy=131921&hvnetw=o&hvqmt=p&hvtargid=kwd-73873627544018%3Aloc-188&hydadcr=25808_1974543&keywords=sht31&qid=1650173019&sr=8-3-spons&psc=1&smid=A4K6YCJSIGVT2&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUFZSkJHV1hUM1RFMjMmZW5jcnlwdGVkSWQ9QTA1NTI0NDYySUY0TTRGMTBGTUNMJmVuY3J5cHRlZEFkSWQ9QTA1MzI2NjczVDlMMDJSTEtEMEJPJndpZGdldE5hbWU9c3BfYXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ==), and the device's battery voltage are provided. The firmware's plugin architecture makes it easily extensible to provide new sensors.
 
-The publishing interval is defined in `platformio.ini`
 
-```
-build_flags = 
-	-D PUBLISH_INTERVAL_SECS=10
-```
 
-### LoRa
 
-LoRa uses Francois Riotte's library [TheThingsNetwork_esp32](https://github.com/rgot-org/TheThingsNetwork_esp32). This requires a number of compiler definitions for specifying e.g. the LoRaWAN specification, region, etc. as described [here](https://github.com/mcci-catena/arduino-lmic#configuration).
 
-Check `platformio.ini` for actual variables, but these typically are:
-
-```
-[env:heltec_lora]
-
-build_flags = 
-
-	-D ARDUINO_LMIC_PROJECT_CONFIG_H_SUPPRESS
-	-D CFG_eu868=1
-	-D CFG_sx1276_radio=1
-	-D LMIC_LORAWAN_SPEC_VERSION=LMIC_LORAWAN_SPEC_VERSION_1_0_3
-```
