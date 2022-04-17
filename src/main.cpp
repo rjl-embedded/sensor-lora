@@ -5,9 +5,6 @@
 #include <Lora.h>
 #include <Sensor.h>
 
-#define LO_BATT_SLEEP_TIME \
-  10 * 60 * 1000 * 1000  // How long when low batt to stay in sleep (us)
-
 Sensor         sensor( PUBLISH_INTERVAL_SECS );
 Lora           lora{};
 EntitySHT31    sht31;
