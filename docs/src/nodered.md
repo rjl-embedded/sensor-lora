@@ -1,6 +1,6 @@
 # Node-RED
 
-![flow](/img/nodered.jpg)
+![flow](img/nodered.jpg)
 
 To get the data into Home Assistant, a [Node-RED](https://nodered.org/) flow is provided that decodes the protocol buffer Packet and transmits its content as a set of MQTT topics.
 
