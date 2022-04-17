@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>Node-RED - Home Assistant LoRa sensor</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Node-RED";
+        var mkdocs_page_input_path = "nodered.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> Home Assistant LoRa sensor
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="hardware.html">Harware</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="lora.html">LoRa</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="nodered.html">Node-RED</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#data-in-out">Data in / out</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#whats-going-on">What's going on</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">Home Assistant LoRa sensor</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Node-RED</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="node-red">Node-RED</h1>
+<p><img alt="flow" src="/img/nodered.jpg" /></p>
+<p>To get the data into Home Assistant, a <a href="https://nodered.org/">Node-RED</a> flow is provided that decodes the protocol buffer Packet and transmits its content as a set of MQTT topics.</p>
+<p>The flow is defined in <code>lib/node-red/lora-sensor.json</code>, which you can import in your local instance of Noe-RED. For security reaons, I've omitted the MQTT in/out nodes because they require passwords.</p>
+<p>It expects a protocol definition schema in <code>data/protobuf/packet.proto</code> in your Node-RED folder. This is provided in <code>lib/protobuf-packet/packet.proto</code>.</p>
+<h2 id="data-in-out">Data in / out</h2>
+<p>The Things Network retransmits the protocal buffer packet emitted by the firmware over MQTT. Configure a Node-RED <code>MQTT in</code> node as follows and wire it to the inputs of the <code>data</code> and <code>ttnMetadata</code> nodes.</p>
+<pre><code>connection
+    server: eu1.cloud.thethings.network
+    port: 1883
+    protocol: MQTT V3.1.1
+    session: use clean session
+
+security
+    username: (whatever you defined for your The Things Network application)
+    password: (whatever you defined for your The Things Network application)
+
+properties:
+    server: (the one you defined in connection)
+    action: subscribe to a single topic
+    topic: v3/XXX@ttn/devices/YYY/up where XXX = your application name, YYY = the eui of your device in the application
+    output: a parsed JSON object
+</code></pre>
+<p>Configure a Node-RED <code>MQTT out</code> node to point to your Home Assistant MQTT server and hook it up to the outputs of the <code>transfer topic</code> and <code>state</code> nodes.</p>
+<h2 id="whats-going-on">What's going on</h2>
+<p>The flow is using Home Assistant's <a href="https://www.home-assistant.io/docs/mqtt/discovery/">MQTT Discovery</a> feature to automate configuration of the device. </p>
+<p>It dynamically generates discovery and state topics from the packet, requiring no additional configuration other than provision of the protocol definition schema. </p>
+<p>In the Node-RED flow, the <code>configuration</code> node generates the discovery topics for each entity attribute present in <code>Packet</code>. Node <code>state</code> transmits each packet as it arrives on its defined MQTT topic, with attribute data as the payload. </p>
+<p>Home Assistant <code>entity ID</code> and <code>Friendly Name</code> are generated from the <code>DEVICE_NAME</code> build flag and protocol buffer <code>EntityName</code> and <code>Attribute</code> fields.</p>
+<p>A build flag sets the name of the sensor as it appears in Home Assistant (see <a href="firmware.html">firmware</a>):</p>
+<pre><code>build_flags = 
+
+    -D DEVICE_NAME=greenhouse
+</code></pre>
+<p>The entity and attribute names are as they are defined in the Protocol Buffer schema. So an attribute from a device with <code>DEVICE_NAME</code> "greenhouse", protocol buffer <code>EntityName</code> "SHT31" and protocol buffer <code>Attribute</code> "temperature" will appear with Home Assistant <code>Entity ID</code> as <code>sensor.greenhouse_temperature_sht31</code> and friendly name <code>Greenhouse temperature (SHT31)</code>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="firmware.html" class="btn btn-neutral float-left" title="Firmware"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="firmware.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme_extra.js" defer></script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
