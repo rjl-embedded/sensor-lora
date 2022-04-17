@@ -41,7 +41,7 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="hardware.html">Harware</a>
+                <li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware</a>
                 </li>
               </ul>
               <ul>
@@ -86,7 +86,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="node-red">Node-RED</h1>
-<p><img alt="flow" src="/img/nodered.jpg" /></p>
+<p><img alt="flow" src="img/nodered.jpg" /></p>
 <p>To get the data into Home Assistant, a <a href="https://nodered.org/">Node-RED</a> flow is provided that decodes the protocol buffer Packet and transmits its content as a set of MQTT topics.</p>
 <p>The flow is defined in <code>lib/node-red/lora-sensor.json</code>, which you can import in your local instance of Noe-RED. For security reaons, I've omitted the MQTT in/out nodes because they require passwords.</p>
 <p>It expects a protocol definition schema in <code>data/protobuf/packet.proto</code> in your Node-RED folder. This is provided in <code>lib/protobuf-packet/packet.proto</code>.</p>
