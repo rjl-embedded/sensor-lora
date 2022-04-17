@@ -23,6 +23,11 @@ Step two. Boom. The entities appear in Home Assistant.
 
 OK. Full(er) documentation [here](https://richardjlyon.github.io/sensor-lora/).
 
+## Contributions
+
+...are welcome. The C++ code is functional, but not optimal. The drivers for new sensors are easy to write. I'd like to figure out how to implement sleep to extend battery life.
+
+
 ## Licensing
 
 It's licensed under the MIT License - see file [LICENSE.md](docs/src/LICENSE.md) for details.
